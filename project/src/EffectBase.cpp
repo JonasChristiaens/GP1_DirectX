@@ -6,26 +6,30 @@ namespace dae
 	EffectBase::EffectBase(ID3D11Device* pDevice, const std::wstring& assetFile)
 	{
 		//load effect
-		m_pTechnique = m_pEffect->GetTechniqueByName("DefaultTechnique");
-		if (!m_pTechnique->IsValid())
+		m_EffectPtr = LoadEffect(pDevice, assetFile);
+
+		if (m_EffectPtr)
 		{
-			std::wcout << L"Technique not valid\n";
+			m_TechniquePtr = m_EffectPtr->GetTechniqueByName("DefaultTechnique");
+			if (!m_TechniquePtr->IsValid())
+				std::wcout << L"Technique not valid\n";
 		}
 	}
 
 	EffectBase::~EffectBase()
 	{
-		delete m_pEffect;
-		delete m_pTechnique;
+		if (m_EffectPtr)		m_EffectPtr->Release();
+		//if (m_TechniquePtr)		m_TechniquePtr->Release();
 	}
 
-	const ID3DX11Effect* EffectBase::GetEffectPtr()
+	ID3DX11Effect* EffectBase::GetEffectPtr()
 	{
-		return m_pEffect;
+		return m_EffectPtr;
 	}
-	const ID3DX11EffectTechnique* EffectBase::GetTechniquePtr()
+
+	ID3DX11EffectTechnique* EffectBase::GetTechniquePtr()
 	{
-		return m_pTechnique;
+		return m_TechniquePtr;
 	}
 
 	ID3DX11Effect* EffectBase::LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile)
@@ -77,5 +81,4 @@ namespace dae
 
 		return pEffect;
 	}
-
 }
