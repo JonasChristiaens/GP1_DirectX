@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "EffectBase.h"
+#include "Texture.h"
 
 namespace dae
 {
@@ -12,24 +13,40 @@ namespace dae
 		{
 			m_TechniquePtr = m_EffectPtr->GetTechniqueByName("DefaultTechnique");
 			if (!m_TechniquePtr->IsValid())
-				std::wcout << L"Technique not valid\n";
-		}
-	}
+				std::wcout << L"m_TechniquePtr not valid!\n";
 
+			m_MatWorldViewProjVariablePtr = m_EffectPtr->GetVariableByName("gWorldViewProj")->AsMatrix();
+			if (!m_MatWorldViewProjVariablePtr->IsValid())
+				std::wcout << L"m_MatWorldViewProjVariablePtr not valid!\n";
+
+			m_DiffuseMapVariablePtr = m_EffectPtr->GetVariableByName("gDiffuseMap")->AsShaderResource();
+			if (!m_DiffuseMapVariablePtr->IsValid())
+				std::wcout << L"m_DiffuseMapVariablePtr not valid!\n";
+		}	
+	}
 	EffectBase::~EffectBase()
 	{
+		if (m_TechniquePtr)		m_TechniquePtr->Release();
 		if (m_EffectPtr)		m_EffectPtr->Release();
-		//if (m_TechniquePtr)		m_TechniquePtr->Release();
 	}
 
-	ID3DX11Effect* EffectBase::GetEffectPtr()
+	ID3DX11Effect* EffectBase::GetEffectPtr() const
 	{
 		return m_EffectPtr;
 	}
-
-	ID3DX11EffectTechnique* EffectBase::GetTechniquePtr()
+	ID3DX11EffectTechnique* EffectBase::GetTechniquePtr() const
 	{
 		return m_TechniquePtr;
+	}
+	void EffectBase::SetMatrix(const Matrix& projectionMatrix)
+	{
+		m_MatWorldViewProjVariablePtr->SetMatrix(reinterpret_cast<const float*>(&projectionMatrix));
+	}
+
+	void EffectBase::SetDiffuseMap(Texture* pDiffuseTexture)
+	{
+		if (m_DiffuseMapVariablePtr)
+			m_DiffuseMapVariablePtr->SetResource(pDiffuseTexture->GetSRV());
 	}
 
 	ID3DX11Effect* EffectBase::LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile)

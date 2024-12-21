@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "Renderer.h"
 #include "Mesh.h"
+#include "Camera.h"
+#include "Texture.h"
+#include "Utils.h"
+
+#include <iostream>
 
 namespace dae {
 
@@ -23,16 +28,33 @@ namespace dae {
 		}
 
 		// Create some data for our mesh
-		std::vector<Vertex> vertices_in
+		/*std::vector<Vertex> triangle_vertices_world
 		{
-			{{0.f, .5f, .5f}, {1.f, 0.f, 0.f}},
-			{{.5f, -.5f, .5f}, {0.f, 0.f, 1.f}},
-			{{-.5f, -.5f, .5f}, {0.f, 1.f, 0.f}},
+			{{0.f, 3.f, 2.f}, {1.f, 0.f, 0.f}, {}},
+			{{3.f, -3.f, 2.f}, {0.f, 0.f, 1.f}, {}},
+			{{-3.f, -3.f, 2.f}, {0.f, 1.f, 0.f}, {}}
 		};
+		const std::vector<Vertex> quad_vertices_world
+		{
+			Vertex{{-3,  3, -2}, {}, {0, 0}},
+			Vertex{{ 3,  3, -2}, {}, {1, 0}},
+			Vertex{{-3, -3, -2}, {}, {0, 1}},
+			Vertex{{ 3, -3, -2}, {}, {1, 1}}
+		};
+		std::vector<uint32_t> triangle_indices{ 0, 1, 2 };
+		std::vector<uint32_t> quad_indices{ 0, 1, 2, 2, 1, 3};
+		*/
+		std::vector<Vertex> vehicle_vertices{};
+		std::vector<uint32_t> vehicle_indices{};
 
-		std::vector<uint32_t> indices{ 0, 1, 2 };
+		Utils::ParseOBJ("./resources/vehicle.obj", vehicle_vertices, vehicle_indices);
 
-		m_MeshPtr = new Mesh(m_pDevice, vertices_in, indices);
+		// Initialize camera
+		const float aspectRatio{ static_cast<float>(m_Width) / static_cast<float>(m_Height) };
+		m_Camera = new Camera({ 0.0f, 0.0f, -50.0f }, 45.0f, aspectRatio, 0.1f, 100.0f);
+		m_MeshPtr = new Mesh(m_pDevice, vehicle_vertices, vehicle_indices);
+
+		m_DiffuseTexturePtr = Texture::LoadFromFile("./resources/vehicle_diffuse.png", m_pDevice);
 	}
 
 	Renderer::~Renderer()
@@ -55,11 +77,13 @@ namespace dae {
 		m_pDevice->Release();
 
 		delete m_MeshPtr;
+		delete m_Camera;
+		delete m_DiffuseTexturePtr;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
 	{
-
+		m_Camera->Update(pTimer);
 	}
 
 
@@ -74,10 +98,33 @@ namespace dae {
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		//2. SET PIPELINE + INVOKE DRAW CALLS (= RENDER)
-		m_MeshPtr->Render(m_pDeviceContext);
+		m_MeshPtr->Render(m_pDeviceContext, m_Camera->GetProjectionMatrix(), m_DiffuseTexturePtr);
 
 		//3. PRESENT BACKBUFFER (SWAP)
 		m_pSwapChain->Present(0, 0);
+	}
+
+	void Renderer::ChangeFilteringMode()
+	{
+		int filteringMode{ int(m_CurrentFilteringMode) };
+		m_CurrentFilteringMode = FilteringMode((filteringMode + 1) % int(FilteringMode::COUNT));
+
+		m_MeshPtr->ChangeFilteringMode(UINT(m_CurrentFilteringMode));
+
+		switch (m_CurrentFilteringMode)
+		{
+		case dae::Renderer::FilteringMode::Point:
+			std::cout << "Now using POINT filtering\n";
+			break;
+		case dae::Renderer::FilteringMode::Linear:
+			std::cout << "Now using LINEAR filtering\n";
+			break;
+		case dae::Renderer::FilteringMode::Anisotropic:
+			std::cout << "Now using ANISOTROPIC filtering\n";
+			break;
+		default:
+			break;
+		}
 	}
 
 	HRESULT Renderer::InitializeDirectX()

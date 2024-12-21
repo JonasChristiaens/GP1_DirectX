@@ -10,6 +10,8 @@ set(SOURCES
     "src/Vector4.cpp"
     "src/EffectBase.cpp"
     "src/Mesh.cpp"
+    "src/Camera.cpp"
+    "src/Texture.cpp"
 )
 
 # Create the executable

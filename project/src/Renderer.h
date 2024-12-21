@@ -5,11 +5,21 @@ struct SDL_Surface;
 
 namespace dae
 {
+	class Camera;
 	class Mesh;
+	class Texture;
 
 	class Renderer final
 	{
 	public:
+		enum class FilteringMode
+		{
+			Point,
+			Linear,
+			Anisotropic,
+			COUNT
+		};
+
 		Renderer(SDL_Window* pWindow);
 		~Renderer();
 
@@ -21,6 +31,7 @@ namespace dae
 		void Update(const Timer* pTimer);
 		void Render() const;
 
+		void ChangeFilteringMode();
 	private:
 		SDL_Window* m_pWindow{};
 
@@ -29,11 +40,14 @@ namespace dae
 
 		bool m_IsInitialized{ false };
 
-		Mesh* m_MeshPtr{};
+		Camera* m_Camera{ nullptr };
+		Mesh* m_MeshPtr{ nullptr };
+		Texture* m_DiffuseTexturePtr{ nullptr };
+
+		FilteringMode m_CurrentFilteringMode{ };
 
 		//DIRECTX
 		HRESULT InitializeDirectX();
-
 
 		ID3D11Device*			m_pDevice{};
 		ID3D11DeviceContext*	m_pDeviceContext{};

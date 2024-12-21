@@ -7,10 +7,12 @@ namespace dae
 	{
 		Vector3 position;
 		ColorRGB color;
+		Vector2 uv;
 	};
 
 	// class forwarding
 	class EffectBase;
+	class Texture;
 
 	class Mesh
 	{
@@ -23,7 +25,8 @@ namespace dae
 		Mesh& operator =(const Mesh& other)			= delete;
 		Mesh& operator =(Mesh&& other) noexcept		= delete;
 
-		void Render(ID3D11DeviceContext* pDeviceContext) const;
+		void Render(ID3D11DeviceContext* pDeviceContext, const Matrix& worldViewProjectionMatrix, Texture* pDiffuseTexture) const;
+		void ChangeFilteringMode(UINT passIndex);
 
 	private:
 		ID3D11Device*			m_DevicePtr{ nullptr };
@@ -41,5 +44,6 @@ namespace dae
 		std::vector<Vertex>		m_Vertices{};
 		std::vector<uint32_t>	m_Indices{};
 		uint32_t				m_NumIndices = 0;
+		UINT					m_PassIndex{};
 	};
 }

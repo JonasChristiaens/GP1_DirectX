@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Mesh.h"
 #include "EffectBase.h"
+#include "Texture.h"
 
 #include <cassert>
 
@@ -19,7 +20,7 @@ namespace dae
 		// Create Vertex layout
 		// ====================
 
-		static constexpr uint32_t numElements{ 2 };
+		static constexpr uint32_t numElements{ 3 };
 		D3D11_INPUT_ELEMENT_DESC vertexDesc[numElements]{};
 		
 		vertexDesc[0].SemanticName = "POSITION";
@@ -31,6 +32,11 @@ namespace dae
 		vertexDesc[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 		vertexDesc[1].AlignedByteOffset = 12;
 		vertexDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
+		vertexDesc[2].SemanticName = "TEXCOORD";
+		vertexDesc[2].Format = DXGI_FORMAT_R32G32_FLOAT;
+		vertexDesc[2].AlignedByteOffset = 24;
+		vertexDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
 
 		// ===================
@@ -101,8 +107,11 @@ namespace dae
 		delete m_EffectBasePtr;
 	}
 
-	void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
+	void Mesh::Render(ID3D11DeviceContext* pDeviceContext, const Matrix& worldViewProjectionMatrix, Texture* pDiffuseTexture) const
 	{
+		m_EffectBasePtr->SetMatrix(worldViewProjectionMatrix);
+		m_EffectBasePtr->SetDiffuseMap(pDiffuseTexture);
+
 		// 1. Set Primitive Topology
 		pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -120,10 +129,15 @@ namespace dae
 		// 5. Draw
 		D3DX11_TECHNIQUE_DESC techDesc{};
 		m_TechniquePtr->GetDesc(&techDesc);
-		for (UINT p{}; p < techDesc.Passes; ++p)
+
+		if (m_PassIndex < techDesc.Passes)
 		{
-			m_TechniquePtr->GetPassByIndex(p)->Apply(0, pDeviceContext);
+			m_TechniquePtr->GetPassByIndex(m_PassIndex)->Apply(0, pDeviceContext);
 			pDeviceContext->DrawIndexed(m_NumIndices, 0, 0);
 		}
+	}
+	void Mesh::ChangeFilteringMode(UINT passIndex)
+	{
+		m_PassIndex = passIndex;
 	}
 }
