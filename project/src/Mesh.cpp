@@ -150,7 +150,6 @@ namespace dae
 			m_EffectCombinedPtr->SetSpecularMap(pSpecularMapTexture);
 			m_EffectCombinedPtr->SetGlossinessMap(pGlossinessTexture);
 		}
-
 		
 
 		// 1. Set Primitive Topology

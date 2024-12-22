@@ -45,7 +45,6 @@ namespace dae
 
 		// technique
 		ID3DX11EffectTechnique*	m_TechniquePtr{ nullptr };
-		ID3D11DeviceContext*	m_DeviceContextPtr{ nullptr };
 
 		std::vector<Vertex>		m_Vertices{};
 		std::vector<uint32_t>	m_Indices{};
