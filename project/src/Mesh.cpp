@@ -20,7 +20,7 @@ namespace dae
 		// Create Vertex layout
 		// ====================
 
-		static constexpr uint32_t numElements{ 3 };
+		static constexpr uint32_t numElements{ 5 };
 		D3D11_INPUT_ELEMENT_DESC vertexDesc[numElements]{};
 		
 		vertexDesc[0].SemanticName = "POSITION";
@@ -38,10 +38,20 @@ namespace dae
 		vertexDesc[2].AlignedByteOffset = 24;
 		vertexDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
+		vertexDesc[3].SemanticName = "NORMAL";
+		vertexDesc[3].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		vertexDesc[3].AlignedByteOffset = 32;
+		vertexDesc[3].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
+		vertexDesc[4].SemanticName = "TANGENT";
+		vertexDesc[4].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		vertexDesc[4].AlignedByteOffset = 44;
+		vertexDesc[4].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
 
 		// ===================
 		// Create Input layout
-		// ====================
+		// ===================
 
 		D3DX11_PASS_DESC passDesc{};
 		m_TechniquePtr->GetPassByIndex(0)->GetDesc(&passDesc);
@@ -107,10 +117,17 @@ namespace dae
 		delete m_EffectBasePtr;
 	}
 
-	void Mesh::Render(ID3D11DeviceContext* pDeviceContext, const Matrix& worldViewProjectionMatrix, Texture* pDiffuseTexture) const
+	void Mesh::Render(ID3D11DeviceContext* pDeviceContext, const Matrix& worldViewProjectionMatrix, const Matrix& worldMatrix, 
+		Texture* pDiffuseTexture, Texture* pNormalMapTexture, Texture* pSpecularMapTexture, Texture* pGlossinessTexture, Vector3 cameraPos) const
 	{
-		m_EffectBasePtr->SetMatrix(worldViewProjectionMatrix);
+		m_EffectBasePtr->SetProjectionMatrix(worldViewProjectionMatrix);
+		m_EffectBasePtr->SetWorldMatrix(worldMatrix);
+		m_EffectBasePtr->SetCameraPosition(cameraPos);
+
 		m_EffectBasePtr->SetDiffuseMap(pDiffuseTexture);
+		m_EffectBasePtr->SetNormalMap(pNormalMapTexture);
+		m_EffectBasePtr->SetSpecularMap(pSpecularMapTexture);
+		m_EffectBasePtr->SetGlossinessMap(pGlossinessTexture);
 
 		// 1. Set Primitive Topology
 		pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

@@ -44,11 +44,17 @@ namespace dae
 		//Keyboard Input
 		const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
 		MoveCamera(pKeyboardState, deltaTime);
-		RotateCamera(deltaTime);
+		RotateCamera(pTimer->GetElapsed());
 
 		//Update Matrices
 		CalculateViewMatrix();
 		CalculateProjectionMatrix();
+	}
+
+	void Camera::RotateModel(const Timer* pTimer)
+	{
+		m_ConstantRotation += pTimer->GetElapsed();
+		m_WorldMatrix = Matrix::CreateRotationY(m_ConstantRotation);
 	}
 
 	Matrix Camera::GetViewMatrix() const
@@ -58,6 +64,16 @@ namespace dae
 	Matrix Camera::GetProjectionMatrix() const
 	{
 		return m_ProjectionMatrix;
+	}
+
+	Matrix Camera::GetWorldMatrix() const
+	{
+		return m_WorldMatrix;
+	}
+
+	Vector3 Camera::GetOrigin() const
+	{
+		return m_Origin;
 	}
 
 	void Camera::MoveCamera(const uint8_t* pKeyboardState, float deltaTime)

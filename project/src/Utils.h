@@ -92,13 +92,13 @@ namespace dae
 
 								// Optional vertex normal
 								file >> iNormal;
-								//vertex.normal = normals[iNormal - 1];
+								vertex.normal = normals[iNormal - 1];
 							}
 						}
 
 						vertices.push_back(vertex);
 						tempIndices[iFace] = uint32_t(vertices.size()) - 1;
-						//indices.push_back(uint32_t(vertices.size()) - 1);
+						indices.push_back(uint32_t(vertices.size()) - 1);
 					}
 
 					indices.push_back(tempIndices[0]);
@@ -138,21 +138,21 @@ namespace dae
 				float r = 1.f / Vector2::Cross(diffX, diffY);
 
 				Vector3 tangent = (edge0 * diffY.y - edge1 * diffY.x) * r;
-				//vertices[index0].tangent += tangent;
-				//vertices[index1].tangent += tangent;
-				//vertices[index2].tangent += tangent;
+				vertices[index0].tangent += tangent;
+				vertices[index1].tangent += tangent;
+				vertices[index2].tangent += tangent;
 			}
 
 			//Create the Tangents (reject)
 			for (auto& v : vertices)
 			{
-				//v.tangent = Vector3::Reject(v.tangent, v.normal).Normalized();
+				v.tangent = Vector3::Reject(v.tangent, v.normal).Normalized();
 
 				if(flipAxisAndWinding)
 				{
 					v.position.z *= -1.f;
-					//v.normal.z *= -1.f;
-					//v.tangent.z *= -1.f;
+					v.normal.z *= -1.f;
+					v.tangent.z *= -1.f;
 				}
 
 			}

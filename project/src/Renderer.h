@@ -32,19 +32,24 @@ namespace dae
 		void Render() const;
 
 		void ChangeFilteringMode();
+		void ToggleRotation();
 	private:
-		SDL_Window* m_pWindow{};
+		SDL_Window*				m_pWindow{};
 
-		int m_Width{};
-		int m_Height{};
+		int						m_Width{};
+		int						m_Height{};
 
-		bool m_IsInitialized{ false };
+		bool					m_IsInitialized{ false };
+		bool					m_Rotate{ true };
 
-		Camera* m_Camera{ nullptr };
-		Mesh* m_MeshPtr{ nullptr };
-		Texture* m_DiffuseTexturePtr{ nullptr };
+		Camera*					m_Camera{ nullptr };
+		Mesh*					m_MeshPtr{ nullptr };
+		Texture*				m_DiffuseTexturePtr{ nullptr };
+		Texture*				m_NormalMapTexturePtr{ nullptr };
+		Texture*				m_SpecularMapTexturePtr{ nullptr };
+		Texture*				m_GlossinessTexturePtr{ nullptr };
 
-		FilteringMode m_CurrentFilteringMode{ };
+		FilteringMode			m_CurrentFilteringMode{ };
 
 		//DIRECTX
 		HRESULT InitializeDirectX();

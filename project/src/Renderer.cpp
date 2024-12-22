@@ -55,6 +55,9 @@ namespace dae {
 		m_MeshPtr = new Mesh(m_pDevice, vehicle_vertices, vehicle_indices);
 
 		m_DiffuseTexturePtr = Texture::LoadFromFile("./resources/vehicle_diffuse.png", m_pDevice);
+		m_NormalMapTexturePtr = Texture::LoadFromFile("./resources/vehicle_normal.png", m_pDevice);
+		m_SpecularMapTexturePtr = Texture::LoadFromFile("./resources/vehicle_specular.png", m_pDevice);
+		m_GlossinessTexturePtr = Texture::LoadFromFile("./resources/vehicle_gloss.png", m_pDevice);
 	}
 
 	Renderer::~Renderer()
@@ -78,14 +81,22 @@ namespace dae {
 
 		delete m_MeshPtr;
 		delete m_Camera;
+
 		delete m_DiffuseTexturePtr;
+		delete m_NormalMapTexturePtr;
+		delete m_SpecularMapTexturePtr;
+		delete m_GlossinessTexturePtr;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
 	{
 		m_Camera->Update(pTimer);
-	}
 
+		if (m_Rotate)
+		{
+			m_Camera->RotateModel(pTimer);
+		}
+	}
 
 	void Renderer::Render() const
 	{
@@ -98,7 +109,8 @@ namespace dae {
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		//2. SET PIPELINE + INVOKE DRAW CALLS (= RENDER)
-		m_MeshPtr->Render(m_pDeviceContext, m_Camera->GetProjectionMatrix(), m_DiffuseTexturePtr);
+		m_MeshPtr->Render(m_pDeviceContext, m_Camera->GetProjectionMatrix(), m_Camera->GetWorldMatrix(), m_DiffuseTexturePtr,
+			m_NormalMapTexturePtr, m_SpecularMapTexturePtr, m_GlossinessTexturePtr, m_Camera->GetOrigin());
 
 		//3. PRESENT BACKBUFFER (SWAP)
 		m_pSwapChain->Present(0, 0);
@@ -125,6 +137,11 @@ namespace dae {
 		default:
 			break;
 		}
+	}
+
+	void Renderer::ToggleRotation()
+	{
+		m_Rotate = !m_Rotate;
 	}
 
 	HRESULT Renderer::InitializeDirectX()
