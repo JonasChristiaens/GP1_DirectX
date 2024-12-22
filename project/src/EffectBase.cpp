@@ -24,44 +24,22 @@ namespace dae
 			if (!m_MatWorldVariablePtr->IsValid())
 				std::wcout << L"m_MatWorldVariablePtr not valid!\n";
 
-
-			// Vectors
-			m_CameraPositionVariablePtr = m_EffectPtr->GetVariableByName("gCameraPosition")->AsVector();
-			if (!m_CameraPositionVariablePtr->IsValid())
-				std::wcout << L"m_CameraPositionVariablePtr not valid!\n";
-
-
 			// Textures
 			m_DiffuseMapVariablePtr = m_EffectPtr->GetVariableByName("gDiffuseMap")->AsShaderResource();
 			if (!m_DiffuseMapVariablePtr->IsValid())
 				std::wcout << L"m_DiffuseMapVariablePtr not valid!\n";
-
-			m_NormalMapVariablePtr = m_EffectPtr->GetVariableByName("gNormalMap")->AsShaderResource();
-			if (!m_NormalMapVariablePtr->IsValid())
-				std::wcout << L"m_NormalMapVariablePtr not valid!\n";
-
-			m_SpecularMapVariablePtr = m_EffectPtr->GetVariableByName("gSpecularMap")->AsShaderResource();
-			if (!m_SpecularMapVariablePtr->IsValid())
-				std::wcout << L"m_SpecularMapVariablePtr not valid!\n";
-
-			m_GlossinessMapVariablePtr = m_EffectPtr->GetVariableByName("gGlossinessMap")->AsShaderResource();
-			if (!m_GlossinessMapVariablePtr->IsValid())
-				std::wcout << L"m_GlossinessMapVariablePtr not valid!\n";
 		}	
 	}
 	EffectBase::~EffectBase()
 	{
 		if (m_TechniquePtr)					m_TechniquePtr->Release();
 
+		// Release matrices
 		if (m_MatWorldViewProjVariablePtr)	m_MatWorldViewProjVariablePtr->Release();
 		if (m_MatWorldVariablePtr)			m_MatWorldVariablePtr->Release();
 
-		if (m_CameraPositionVariablePtr)	m_CameraPositionVariablePtr->Release();
-
+		// Release textures
 		if (m_DiffuseMapVariablePtr)		m_DiffuseMapVariablePtr->Release();
-		if (m_NormalMapVariablePtr)			m_NormalMapVariablePtr->Release();
-		if (m_SpecularMapVariablePtr)		m_SpecularMapVariablePtr->Release();
-		if (m_GlossinessMapVariablePtr)		m_GlossinessMapVariablePtr->Release();
 
 		if (m_EffectPtr)					m_EffectPtr->Release();
 	}
@@ -83,29 +61,10 @@ namespace dae
 	{
 		m_MatWorldVariablePtr->SetMatrix(reinterpret_cast<const float*>(&worldMatrix));
 	}
-	void EffectBase::SetCameraPosition(const Vector3& origin)
-	{
-		m_CameraPositionVariablePtr->SetFloatVector(reinterpret_cast<const float*>(&origin));
-	}
 	void EffectBase::SetDiffuseMap(const Texture* pDiffuseTexture)
 	{
 		if (m_DiffuseMapVariablePtr)
 			m_DiffuseMapVariablePtr->SetResource(pDiffuseTexture->GetSRV());
-	}
-	void EffectBase::SetNormalMap(const Texture* pNormalMapTexture)
-	{
-		if (m_NormalMapVariablePtr)
-			m_NormalMapVariablePtr->SetResource(pNormalMapTexture->GetSRV());
-	}
-	void EffectBase::SetSpecularMap(const Texture* pSpecularMapTexture)
-	{
-		if (m_SpecularMapVariablePtr)
-			m_SpecularMapVariablePtr->SetResource(pSpecularMapTexture->GetSRV());
-	}
-	void EffectBase::SetGlossinessMap(const Texture* pGlossinessTexture)
-	{
-		if (m_GlossinessMapVariablePtr)
-			m_GlossinessMapVariablePtr->SetResource(pGlossinessTexture->GetSRV());
 	}
 
 	ID3DX11Effect* EffectBase::LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile)

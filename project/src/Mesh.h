@@ -13,13 +13,14 @@ namespace dae
 	};
 
 	// class forwarding
-	class EffectBase;
+	class EffectFlat;
+	class EffectCombined;
 	class Texture;
 
 	class Mesh
 	{
 	public:
-		Mesh(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+		Mesh(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, bool isFlatEffect);
 		~Mesh();
 
 		Mesh(const Mesh& other)						= delete;
@@ -32,8 +33,10 @@ namespace dae
 		void ChangeFilteringMode(UINT passIndex);
 
 	private:
+		bool					m_IsFlatEffect{};
 		ID3D11Device*			m_DevicePtr{ nullptr };
-		EffectBase*				m_EffectBasePtr{ nullptr };
+		EffectCombined*			m_EffectCombinedPtr{ nullptr };
+		EffectFlat*				m_EffectFlatPtr{ nullptr };
 
 		// shader variables
 		ID3D11InputLayout*		m_InputLayoutPtr{ nullptr };

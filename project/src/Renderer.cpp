@@ -47,14 +47,21 @@ namespace dae {
 		std::vector<Vertex> vehicle_vertices{};
 		std::vector<uint32_t> vehicle_indices{};
 
+		std::vector<Vertex> fire_vertices{};
+		std::vector<uint32_t> fire_indices{};
+
 		Utils::ParseOBJ("./resources/vehicle.obj", vehicle_vertices, vehicle_indices);
+		Utils::ParseOBJ("./resources/fireFX.obj", fire_vertices, fire_indices);
 
 		// Initialize camera
 		const float aspectRatio{ static_cast<float>(m_Width) / static_cast<float>(m_Height) };
 		m_Camera = new Camera({ 0.0f, 0.0f, -50.0f }, 45.0f, aspectRatio, 0.1f, 100.0f);
-		m_MeshPtr = new Mesh(m_pDevice, vehicle_vertices, vehicle_indices);
+		m_MeshVehiclePtr = new Mesh(m_pDevice, vehicle_vertices, vehicle_indices, false);
+		m_MeshFirePtr = new Mesh(m_pDevice, fire_vertices, fire_indices, true);
 
-		m_DiffuseTexturePtr = Texture::LoadFromFile("./resources/vehicle_diffuse.png", m_pDevice);
+		m_FireDiffuseTexturePtr = Texture::LoadFromFile("./resources/fireFX_diffuse.png", m_pDevice);
+
+		m_VehicleDiffuseTexturePtr = Texture::LoadFromFile("./resources/vehicle_diffuse.png", m_pDevice);
 		m_NormalMapTexturePtr = Texture::LoadFromFile("./resources/vehicle_normal.png", m_pDevice);
 		m_SpecularMapTexturePtr = Texture::LoadFromFile("./resources/vehicle_specular.png", m_pDevice);
 		m_GlossinessTexturePtr = Texture::LoadFromFile("./resources/vehicle_gloss.png", m_pDevice);
@@ -79,10 +86,12 @@ namespace dae {
 		
 		m_pDevice->Release();
 
-		delete m_MeshPtr;
+		delete m_MeshVehiclePtr;
+		delete m_MeshFirePtr;
 		delete m_Camera;
 
-		delete m_DiffuseTexturePtr;
+		delete m_FireDiffuseTexturePtr;
+		delete m_VehicleDiffuseTexturePtr;
 		delete m_NormalMapTexturePtr;
 		delete m_SpecularMapTexturePtr;
 		delete m_GlossinessTexturePtr;
@@ -109,7 +118,10 @@ namespace dae {
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		//2. SET PIPELINE + INVOKE DRAW CALLS (= RENDER)
-		m_MeshPtr->Render(m_pDeviceContext, m_Camera->GetProjectionMatrix(), m_Camera->GetWorldMatrix(), m_DiffuseTexturePtr,
+		m_MeshVehiclePtr->Render(m_pDeviceContext, m_Camera->GetProjectionMatrix(), m_Camera->GetWorldMatrix(), m_VehicleDiffuseTexturePtr,
+			m_NormalMapTexturePtr, m_SpecularMapTexturePtr, m_GlossinessTexturePtr, m_Camera->GetOrigin());
+
+		m_MeshFirePtr->Render(m_pDeviceContext, m_Camera->GetProjectionMatrix(), m_Camera->GetWorldMatrix(), m_FireDiffuseTexturePtr,
 			m_NormalMapTexturePtr, m_SpecularMapTexturePtr, m_GlossinessTexturePtr, m_Camera->GetOrigin());
 
 		//3. PRESENT BACKBUFFER (SWAP)
@@ -121,7 +133,7 @@ namespace dae {
 		int filteringMode{ int(m_CurrentFilteringMode) };
 		m_CurrentFilteringMode = FilteringMode((filteringMode + 1) % int(FilteringMode::COUNT));
 
-		m_MeshPtr->ChangeFilteringMode(UINT(m_CurrentFilteringMode));
+		m_MeshVehiclePtr->ChangeFilteringMode(UINT(m_CurrentFilteringMode));
 
 		switch (m_CurrentFilteringMode)
 		{

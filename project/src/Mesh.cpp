@@ -1,20 +1,30 @@
 #include "pch.h"
 #include "Mesh.h"
-#include "EffectBase.h"
+#include "EffectCombined.h"
+#include "EffectFlat.h"
 #include "Texture.h"
 
 #include <cassert>
 
 namespace dae
 {
-	Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
+	Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, bool isFlatEffect)
 		: m_DevicePtr{ pDevice }
 		, m_Vertices{ vertices }
 		, m_Indices{ indices }
+		, m_IsFlatEffect{ isFlatEffect }
 
 	{
-		m_EffectBasePtr = new EffectBase(m_DevicePtr, L"./resources/PosCol3D.fx");
-		m_TechniquePtr = m_EffectBasePtr->GetTechniquePtr();
+		if (m_IsFlatEffect)
+		{
+			m_EffectFlatPtr = new EffectFlat(m_DevicePtr, L"./resources/Fire.fx");
+			m_TechniquePtr = m_EffectFlatPtr->GetTechniquePtr();
+		}
+		else
+		{
+			m_EffectCombinedPtr = new EffectCombined(m_DevicePtr, L"./resources/PosCol3D.fx");
+			m_TechniquePtr = m_EffectCombinedPtr->GetTechniquePtr();
+		}
 
 		// ===================
 		// Create Vertex layout
@@ -114,20 +124,34 @@ namespace dae
 		if (m_InputLayoutPtr) m_InputLayoutPtr->Release();
 		if (m_IndexBufferPtr) m_IndexBufferPtr->Release();
 
-		delete m_EffectBasePtr;
+		delete m_EffectFlatPtr;
+		delete m_EffectCombinedPtr;
 	}
 
 	void Mesh::Render(ID3D11DeviceContext* pDeviceContext, const Matrix& worldViewProjectionMatrix, const Matrix& worldMatrix, 
 		Texture* pDiffuseTexture, Texture* pNormalMapTexture, Texture* pSpecularMapTexture, Texture* pGlossinessTexture, Vector3 cameraPos) const
 	{
-		m_EffectBasePtr->SetProjectionMatrix(worldViewProjectionMatrix);
-		m_EffectBasePtr->SetWorldMatrix(worldMatrix);
-		m_EffectBasePtr->SetCameraPosition(cameraPos);
 
-		m_EffectBasePtr->SetDiffuseMap(pDiffuseTexture);
-		m_EffectBasePtr->SetNormalMap(pNormalMapTexture);
-		m_EffectBasePtr->SetSpecularMap(pSpecularMapTexture);
-		m_EffectBasePtr->SetGlossinessMap(pGlossinessTexture);
+		if (m_IsFlatEffect)
+		{
+			m_EffectFlatPtr->SetProjectionMatrix(worldViewProjectionMatrix);
+			m_EffectFlatPtr->SetWorldMatrix(worldMatrix);
+
+			m_EffectFlatPtr->SetDiffuseMap(pDiffuseTexture);
+		}
+		else
+		{
+			m_EffectCombinedPtr->SetProjectionMatrix(worldViewProjectionMatrix);
+			m_EffectCombinedPtr->SetWorldMatrix(worldMatrix);
+			m_EffectCombinedPtr->SetCameraPosition(cameraPos);
+
+			m_EffectCombinedPtr->SetDiffuseMap(pDiffuseTexture);
+			m_EffectCombinedPtr->SetNormalMap(pNormalMapTexture);
+			m_EffectCombinedPtr->SetSpecularMap(pSpecularMapTexture);
+			m_EffectCombinedPtr->SetGlossinessMap(pGlossinessTexture);
+		}
+
+		
 
 		// 1. Set Primitive Topology
 		pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

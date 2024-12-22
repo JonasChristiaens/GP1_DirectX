@@ -43,8 +43,11 @@ namespace dae
 		bool					m_Rotate{ true };
 
 		Camera*					m_Camera{ nullptr };
-		Mesh*					m_MeshPtr{ nullptr };
-		Texture*				m_DiffuseTexturePtr{ nullptr };
+		Mesh*					m_MeshVehiclePtr{ nullptr };
+		Mesh*					m_MeshFirePtr{ nullptr };
+
+		Texture*				m_VehicleDiffuseTexturePtr{ nullptr };
+		Texture*				m_FireDiffuseTexturePtr{ nullptr };
 		Texture*				m_NormalMapTexturePtr{ nullptr };
 		Texture*				m_SpecularMapTexturePtr{ nullptr };
 		Texture*				m_GlossinessTexturePtr{ nullptr };
